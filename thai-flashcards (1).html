@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Thai Vocabulary Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #fdfbf7 0%, #f5ebe0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            touch-action: pan-y;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #6b4423;
+            margin-bottom: 8px;
+            font-size: clamp(1.8em, 6vw, 2.5em);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 12px;
+            font-size: clamp(0.75em, 3vw, 0.9em);
+            padding: 0 10px;
+        }
+
+        .list-selector-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .list-selector {
+            padding: 12px 20px;
+            font-size: clamp(0.9em, 3.5vw, 1em);
+            border: 2px solid #d4a373;
+            border-radius: 8px;
+            background: white;
+            color: #6b4423;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            max-width: 100%;
+        }
+
+        .list-selector:focus {
+            outline: none;
+            border-color: #8b6f47;
+            box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
+        }
+
+        .top-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            justify-content: space-between;
+        }
+
+        .settings-btn, .stats-btn {
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid #d4a373;
+            border-radius: 8px;
+            color: #6b4423;
+            cursor: pointer;
+            font-size: clamp(0.85em, 3vw, 0.95em);
+            font-weight: 500;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .settings-btn:active, .stats-btn:active {
+            background: #f5ebe0;
+            transform: scale(0.98);
+        }
+
+        .session-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .session-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #d4a373;
+            background: white;
+            border-radius: 8px;
+            color: #6b4423;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: clamp(0.8em, 2.8vw, 0.9em);
+        }
+
+        .session-btn:active {
+            transform: scale(0.95);
+            background: #f5ebe0;
+        }
+
+        .session-btn.primary {
+            background: linear-gradient(135deg, #d4a373 0%, #8b6f47 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .progress-container {
+            margin-bottom: 15px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: clamp(0.8em, 3vw, 0.9em);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d4a373 0%, #8b6f47 100%);
+            transition: width 0.3s ease;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .swipe-bar {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .swipe-bar.left {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.95) 0%, rgba(239, 68, 68, 0) 50%);
+        }
+
+        .swipe-bar.right {
+            background: linear-gradient(-90deg, rgba(34, 197, 94, 0.95) 0%, rgba(34, 197, 94, 0) 50%);
+        }
+
+        .swipe-bar.visible {
+            opacity: 1;
+        }
+
+        .swipe-hint {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3em;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .swipe-hint.left {
+            left: 25px;
+            color: white;
+        }
+
+        .swipe-hint.right {
+            right: 25px;
+            color: white;
+        }
+
+        .swipe-hint.visible {
+            opacity: 1;
+        }
+
+        .swipe-hint.visible.left {
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .swipe-hint.visible.right {
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .card {
+            width: 100%;
+            min-height: clamp(280px, 50vh, 400px);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card.swiping {
+            transition: none;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            min-height: clamp(280px, 50vh, 400px);
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: clamp(20px, 8vw, 40px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-front {
+            background: white;
+            border: 1px solid rgba(139, 111, 71, 0.1);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #8b6f47 0%, #6b4423 100%);
+            transform: rotateY(180deg);
+        }
+
+        .card-text {
+            font-size: clamp(2em, 8vw, 3.5em);
+            font-weight: 600;
+            color: #6b4423;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            max-width: 100%;
+            line-height: 1.2;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .card-text.medium { font-size: clamp(1.5em, 6vw, 2.2em); }
+        .card-text.small { font-size: clamp(1.2em, 5vw, 1.6em); }
+        .card-text.tiny { font-size: clamp(1em, 4vw, 1.2em); }
+        .card-text.xtiny { font-size: clamp(0.9em, 3.5vw, 1em); }
+
+        .card-back .card-text {
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        button {
+            padding: clamp(12px, 3vw, 15px) clamp(16px, 4vw, 20px);
+            border: none;
+            border-radius: 12px;
+            font-size: clamp(0.9em, 3.5vw, 1em);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            touch-action: manipulation;
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-nav { background: #f5ebe0; color: #6b4423; }
+        .btn-flip { background: linear-gradient(135deg, #d4a373 0%, #8b6f47 100%); color: white; }
+        .btn-action { background: white; color: #6b4423; border: 2px solid #d4a373; }
+
+        .action-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: clamp(1em, 3.5vw, 1.1em);
+            color: #6b4423;
+        }
+
+        .score-number { font-weight: 600; font-size: 1.3em; }
+        .score-correct { color: #22c55e; }
+        .score-incorrect { color: #ef4444; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.open { display: flex; }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: clamp(20px, 5vw, 30px);
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #6b4423;
+            font-size: clamp(1.3em, 5vw, 1.6em);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            color: #666;
+            cursor: pointer;
+            padding: 5px 10px;
+            flex: none;
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .modal-section h3 {
+            color: #6b4423;
+            margin-bottom: 10px;
+            font-size: clamp(1em, 4vw, 1.1em);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px 16px;
+            background: white;
+            color: #6b4423;
+            border: 2px solid #d4a373;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            font-size: clamp(0.9em, 3.5vw, 1em);
+            transition: all 0.2s;
+        }
+
+        #csvFileInput { position: absolute; left: -9999px; }
+
+        .import-info {
+            margin-top: 8px;
+            font-size: clamp(0.75em, 3vw, 0.85em);
+            color: #999;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: #f5ebe0;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: clamp(1.5em, 6vw, 2em);
+            font-weight: 700;
+            color: #6b4423;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: clamp(0.8em, 3vw, 0.9em);
+            color: #666;
+        }
+
+        .list-stat-item {
+            background: #faf8f5;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #e5d9c8;
+        }
+
+        .list-stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .list-stat-name { font-weight: 600; color: #6b4423; font-size: 1em; }
+        .list-stat-percent { font-size: 1.3em; font-weight: 700; color: #4ade80; }
+
+        .list-stat-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .list-stat-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+            transition: width 0.3s ease;
+        }
+
+        .list-stat-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .stat-detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-detail-value { font-weight: 600; color: #6b4423; }
+
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #d4a373;
+            background: white;
+            border-radius: 8px;
+            color: #6b4423;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: clamp(0.85em, 3vw, 0.95em);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #d4a373 0%, #8b6f47 100%);
+            color: white;
+        }
+
+        .mode-btn:active { transform: scale(0.95); }
+
+        .action-btn { width: 100%; margin-bottom: 10px; }
+
+        .resume-modal-content { text-align: center; }
+
+        .resume-modal-content p {
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .resume-modal-content .session-info {
+            background: #f5ebe0;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .resume-modal-content .session-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .resume-modal-content .session-info-item:last-child { margin-bottom: 0; }
+        .resume-modal-content .session-info-label { color: #666; }
+        .resume-modal-content .session-info-value { font-weight: 600; color: #6b4423; }
+
+        .resume-buttons { display: flex; gap: 10px; }
+        .resume-buttons button { flex: 1; }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; }
+
+        .favorite-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            cursor: pointer;
+            z-index: 15;
+            padding: 5px;
+            opacity: 0.4;
+            transition: all 0.2s;
+            flex: none;
+        }
+
+        .favorite-btn:hover { opacity: 0.7; }
+        .favorite-btn.active { opacity: 1; }
+        .favorite-btn:active { transform: scale(1.2); }
+
+        .card-container { position: relative; }
+
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Thai Vocabulary</h1>
+        <p class="subtitle">Tap to flip • Swipe right for ✓ • Swipe left for ✗</p>
+
+        <div class="list-selector-container">
+            <select class="list-selector" id="listSelector">
+                <option value="0">List 1: Core Vocabulary (200 words)</option>
+            </select>
+            <div id="listProgressDisplay" style="text-align: center; margin-top: 8px; font-size: 0.9em; color: #6b4423; font-weight: 500;"></div>
+        </div>
+
+        <div class="top-controls">
+            <button class="settings-btn" id="settingsBtn">⚙️ Settings</button>
+            <button class="stats-btn" id="statsBtn">📊 Stats</button>
+        </div>
+
+        <div class="session-controls">
+            <button class="session-btn" id="restartBtn">🔄 Restart</button>
+            <button class="session-btn primary" id="resumeBtn">▶️ Resume</button>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="all">All Cards</button>
+            <button class="mode-btn" data-mode="review">Review Wrong</button>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="cardCounter">Card 1 of 200</span>
+                <span id="progressPercent">1%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="card-container">
+            <button class="favorite-btn" id="favoriteBtn" title="Add to favorites">☆</button>
+            <div class="swipe-bar left" id="swipeBarLeft"></div>
+            <div class="swipe-bar right" id="swipeBarRight"></div>
+            <div class="swipe-hint left" id="swipeLeft">✗</div>
+            <div class="swipe-hint right" id="swipeRight">✓</div>
+            <div class="card" id="flashcard">
+                <div class="card-face card-front">
+                    <div class="card-text" id="frontText"></div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="card-text" id="backText"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="score-display">
+            <span class="score-correct score-number" id="correctScore">0</span> correct • 
+            <span class="score-incorrect score-number" id="incorrectScore">0</span> incorrect
+        </div>
+
+        <div class="controls">
+            <button class="btn-nav" id="prevBtn">← Prev</button>
+            <button class="btn-flip" id="flipBtn">Flip</button>
+            <button class="btn-nav" id="nextBtn">Next →</button>
+        </div>
+
+        <div class="action-controls">
+            <button class="btn-action" id="shuffleBtn">🔀 Shuffle</button>
+            <button class="btn-action" id="toggleBtn">🔄 Thai Front</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-btn" id="closeSettings">✕</button>
+            </div>
+            <div class="modal-section">
+                <h3>Import Flashcards</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvFileInput" accept=".csv" />
+                    <label for="csvFileInput" class="file-input-label">📁 Choose CSV File</label>
+                </div>
+                <div class="import-info">CSV format: First column = Thai, Second column = English (with header row)</div>
+            </div>
+            <div class="modal-section">
+                <h3>Data Management</h3>
+                <button class="btn-action action-btn" id="exportBtn">📤 Export Progress</button>
+                <button class="btn-action action-btn" id="resetBtn">🔄 Reset All Progress</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Statistics</h2>
+                <button class="close-btn" id="closeStats">✕</button>
+            </div>
+            <div class="modal-section">
+                <h3>Current List Progress</h3>
+                <div id="currentListStats"></div>
+            </div>
+            <div class="modal-section">
+                <h3>All Lists</h3>
+                <div id="allListsStats"></div>
+            </div>
+            <div class="modal-section">
+                <h3>Session Stats</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="sessionCorrect">0</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="sessionIncorrect">0</div>
+                        <div class="stat-label">Incorrect</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-section" style="font-size: 0.85em; color: #666; line-height: 1.5;">
+                <strong>Learning Algorithm:</strong> A word is marked as "learned" after getting it correct 3 times in a row. If not reviewed within 7 days, it needs to be relearned.
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Modal -->
+    <div class="modal" id="resumeModal">
+        <div class="modal-content resume-modal-content">
+            <div class="modal-header">
+                <h2>Session in Progress</h2>
+                <button class="close-btn" id="closeResume">✕</button>
+            </div>
+            <p>You have an unfinished session. Would you like to resume or start fresh?</p>
+            <div class="session-info" id="sessionInfoDisplay">
+                <div class="session-info-item">
+                    <span class="session-info-label">List:</span>
+                    <span class="session-info-value" id="resumeListName">-</span>
+                </div>
+                <div class="session-info-item">
+                    <span class="session-info-label">Progress:</span>
+                    <span class="session-info-value" id="resumeProgress">-</span>
+                </div>
+                <div class="session-info-item">
+                    <span class="session-info-label">Correct:</span>
+                    <span class="session-info-value score-correct" id="resumeCorrect">-</span>
+                </div>
+                <div class="session-info-item">
+                    <span class="session-info-label">Incorrect:</span>
+                    <span class="session-info-value score-incorrect" id="resumeIncorrect">-</span>
+                </div>
+            </div>
+            <div class="resume-buttons">
+                <button class="btn-action" id="startFreshBtn">Start Fresh</button>
+                <button class="btn-flip" id="resumeSessionBtn">Resume</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const vocabularyLists = [
+            {
+                name: "List 1: Core Vocabulary",
+                words: [
+                    { thai: "ตื่นนอน", english: "to wake up" },
+                    { thai: "แต่งตัว", english: "to get dressed" },
+                    { thai: "เตรียมตัว", english: "to prepare oneself" },
+                    { thai: "รีบ", english: "to hurry" },
+                    { thai: "ล่าช้า", english: "to be late/delayed" },
+                    { thai: "จอง", english: "to book/reserve" },
+                    { thai: "ยกเลิก", english: "to cancel" },
+                    { thai: "เปลี่ยนแปลง", english: "to change/alter" },
+                    { thai: "เหนื่อย", english: "tired" },
+                    { thai: "เบื่อ", english: "bored" },
+                    { thai: "ตื่นเต้น", english: "excited" },
+                    { thai: "กังวล", english: "worried/anxious" },
+                    { thai: "ผ่อนคลาย", english: "relaxed" },
+                    { thai: "ประหลาดใจ", english: "surprised" },
+                    { thai: "ผิดหวัง", english: "disappointed" },
+                    { thai: "สะดวก", english: "convenient" },
+                    { thai: "ยุ่งยาก", english: "complicated" },
+                    { thai: "เหมาะสม", english: "suitable/appropriate" },
+                    { thai: "แออัด", english: "crowded" },
+                    { thai: "สดใหม่", english: "fresh" },
+                    { thai: "เสีย", english: "broken/spoiled" },
+                    { thai: "คุ้มค่า", english: "worthwhile/good value" },
+                    { thai: "ติดต่อ", english: "to contact" },
+                    { thai: "แนะนำ", english: "to recommend/introduce" },
+                    { thai: "เลือก", english: "to choose" },
+                    { thai: "ตัดสินใจ", english: "to decide" },
+                    { thai: "แบ่งปัน", english: "to share" },
+                    { thai: "เปรียบเทียบ", english: "to compare" },
+                    { thai: "ประหยัด", english: "to save/economize" },
+                    { thai: "ส่วนผสม", english: "ingredient" },
+                    { thai: "สูตร", english: "recipe" },
+                    { thai: "รสชาติ", english: "taste/flavor" },
+                    { thai: "เผ็ด", english: "spicy" },
+                    { thai: "หวาน", english: "sweet" },
+                    { thai: "เปรี้ยว", english: "sour" },
+                    { thai: "ทอด", english: "to fry" },
+                    { thai: "ต้ม", english: "to boil" },
+                    { thai: "สวย", english: "beautiful" },
+                    { thai: "ฉลาด", english: "smart/clever" },
+                    { thai: "สะอาด", english: "clean" },
+                    { thai: "สกปรก", english: "dirty" },
+                    { thai: "แพง", english: "expensive" },
+                    { thai: "ถูก", english: "cheap" },
+                    { thai: "หนาว", english: "cold" },
+                    { thai: "ร้อน", english: "hot" },
+                    { thai: "สอน", english: "to teach" },
+                    { thai: "เรียน", english: "to learn" },
+                    { thai: "ทำงาน", english: "to work" },
+                    { thai: "พูด", english: "to speak" },
+                    { thai: "ฟัง", english: "to listen" },
+                    { thai: "อ่าน", english: "to read" },
+                    { thai: "เขียน", english: "to write" },
+                    { thai: "ซื้อ", english: "to buy" },
+                    { thai: "ขาย", english: "to sell" },
+                    { thai: "ให้", english: "to give" },
+                    { thai: "รับ", english: "to receive" },
+                    { thai: "ส่ง", english: "to send" },
+                    { thai: "เปิด", english: "to open" },
+                    { thai: "ปิด", english: "to close" },
+                    { thai: "ใช้", english: "to use" },
+                    { thai: "ซ่อม", english: "to repair/fix" },
+                    { thai: "ทำอาหาร", english: "to cook" },
+                    { thai: "ล้าง", english: "to wash" },
+                    { thai: "ผสม", english: "to mix" },
+                    { thai: "หั่น", english: "to chop/cut" },
+                    { thai: "ปรุง", english: "to season" },
+                    { thai: "นึ่ง", english: "to steam" },
+                    { thai: "ย่าง", english: "to grill" },
+                    { thai: "อบ", english: "to bake" },
+                    { thai: "เครื่องเทศ", english: "spice" },
+                    { thai: "เครื่องปรุง", english: "seasoning" },
+                    { thai: "วัตถุดิบ", english: "ingredients" },
+                    { thai: "เค็ม", english: "salty" },
+                    { thai: "ขม", english: "bitter" },
+                    { thai: "อร่อย", english: "delicious" },
+                    { thai: "เหม็น", english: "smelly/stinky" },
+                    { thai: "หอม", english: "fragrant" },
+                    { thai: "จืด", english: "bland" },
+                    { thai: "กรอบ", english: "crispy" },
+                    { thai: "นิ่ม", english: "soft" },
+                    { thai: "แข็ง", english: "hard" },
+                    { thai: "เหนียว", english: "sticky/chewy" },
+                    { thai: "รวดเร็ว", english: "fast/quick" },
+                    { thai: "ช้า", english: "slow" },
+                    { thai: "ง่าย", english: "easy" },
+                    { thai: "ยาก", english: "difficult" },
+                    { thai: "สูง", english: "tall/high" },
+                    { thai: "เตี้ย", english: "short" },
+                    { thai: "ยาว", english: "long" },
+                    { thai: "สั้น", english: "short (length)" },
+                    { thai: "ใหญ่", english: "big" },
+                    { thai: "เล็ก", english: "small" },
+                    { thai: "กว้าง", english: "wide" },
+                    { thai: "แคบ", english: "narrow" },
+                    { thai: "หนา", english: "thick" },
+                    { thai: "บาง", english: "thin" },
+                    { thai: "เก่า", english: "old" },
+                    { thai: "ใหม่", english: "new" },
+                    { thai: "แข็งแรง", english: "strong" },
+                    { thai: "อ่อนแอ", english: "weak" },
+                    { thai: "อ้วน", english: "fat" },
+                    { thai: "ผอม", english: "thin/skinny" },
+                    { thai: "ขยัน", english: "diligent/hardworking" },
+                    { thai: "ขี้เกียจ", english: "lazy" },
+                    { thai: "รวย", english: "rich" },
+                    { thai: "จน", english: "poor" },
+                    { thai: "มีชื่อเสียง", english: "famous" },
+                    { thai: "เงียบ", english: "quiet" },
+                    { thai: "เสียงดัง", english: "loud/noisy" },
+                    { thai: "สนุก", english: "fun" },
+                    { thai: "น่าเบื่อ", english: "boring" },
+                    { thai: "น่ากลัว", english: "scary" },
+                    { thai: "น่ารัก", english: "cute" },
+                    { thai: "สบาย", english: "comfortable" },
+                    { thai: "ลำบาก", english: "difficult/troublesome" },
+                    { thai: "อันตราย", english: "dangerous" },
+                    { thai: "ปลอดภัย", english: "safe" },
+                    { thai: "มืด", english: "dark" },
+                    { thai: "สว่าง", english: "bright" },
+                    { thai: "เรียบร้อย", english: "neat/tidy" },
+                    { thai: "ภูมิใจ", english: "proud" },
+                    { thai: "อับอาย", english: "ashamed" },
+                    { thai: "โกรธ", english: "angry" },
+                    { thai: "เสียใจ", english: "sad/sorry" },
+                    { thai: "ดีใจ", english: "happy/glad" },
+                    { thai: "ตกใจ", english: "shocked/startled" },
+                    { thai: "กลัว", english: "afraid/scared" },
+                    { thai: "คิดถึง", english: "to miss (someone)" },
+                    { thai: "รัก", english: "to love" },
+                    { thai: "เกลียด", english: "to hate" },
+                    { thai: "ชอบ", english: "to like" },
+                    { thai: "ไม่ชอบ", english: "to dislike" },
+                    { thai: "หวัง", english: "to hope" },
+                    { thai: "เชื่อ", english: "to believe" },
+                    { thai: "สงสัย", english: "to doubt/wonder" },
+                    { thai: "เข้าใจ", english: "to understand" },
+                    { thai: "สับสน", english: "confused" },
+                    { thai: "จำ", english: "to remember" },
+                    { thai: "ลืม", english: "to forget" },
+                    { thai: "เห็น", english: "to see" },
+                    { thai: "มอง", english: "to look at" },
+                    { thai: "ได้ยิน", english: "to hear" },
+                    { thai: "สัมผัส", english: "to touch" },
+                    { thai: "ชิม", english: "to taste" },
+                    { thai: "ดม", english: "to smell" },
+                    { thai: "คิด", english: "to think" },
+                    { thai: "รู้สึก", english: "to feel" },
+                    { thai: "เดิน", english: "to walk" },
+                    { thai: "วิ่ง", english: "to run" },
+                    { thai: "กระโดด", english: "to jump" },
+                    { thai: "นั่ง", english: "to sit" },
+                    { thai: "ยืน", english: "to stand" },
+                    { thai: "นอน", english: "to lie down/sleep" },
+                    { thai: "ตื่น", english: "to wake up" },
+                    { thai: "กลับ", english: "to return" },
+                    { thai: "มา", english: "to come" },
+                    { thai: "ไป", english: "to go" },
+                    { thai: "เข้า", english: "to enter" },
+                    { thai: "ออก", english: "to exit/leave" },
+                    { thai: "ขึ้น", english: "to go up" },
+                    { thai: "ลง", english: "to go down" },
+                    { thai: "ผ่าน", english: "to pass through" },
+                    { thai: "หยุด", english: "to stop" },
+                    { thai: "รอ", english: "to wait" },
+                    { thai: "เริ่ม", english: "to start/begin" },
+                    { thai: "จบ", english: "to finish/end" },
+                    { thai: "ใช้เวลา", english: "to spend time" },
+                    { thai: "ประหยัดเวลา", english: "to save time" },
+                    { thai: "เสียเวลา", english: "to waste time" },
+                    { thai: "เร็ว", english: "to be fast" },
+                    { thai: "ตรงเวลา", english: "on time" },
+                    { thai: "สาย", english: "late" },
+                    { thai: "แล้ว", english: "already" },
+                    { thai: "ยัง", english: "still/yet" },
+                    { thai: "กำลัง", english: "currently/in progress" },
+                    { thai: "จะ", english: "will (future)" },
+                    { thai: "เคย", english: "used to/have done before" },
+                    { thai: "คุย", english: "to chat/talk" },
+                    { thai: "พูดคุย", english: "to converse" },
+                    { thai: "คุยกัน", english: "to talk together" },
+                    { thai: "เล่า", english: "to tell/narrate" },
+                    { thai: "อธิบาย", english: "to explain" },
+                    { thai: "ถาม", english: "to ask" },
+                    { thai: "ตอบ", english: "to answer" },
+                    { thai: "บอก", english: "to tell/inform" },
+                    { thai: "ชี้แจง", english: "to clarify" },
+                    { thai: "เตือน", english: "to warn/remind" },
+                    { thai: "สัญญา", english: "to promise" },
+                    { thai: "โกหก", english: "to lie" },
+                    { thai: "พยายาม", english: "to try" },
+                    { thai: "ฝึกฝน", english: "to practice" },
+                    { thai: "เรียนรู้", english: "to learn (continuously)" },
+                    { thai: "ศึกษา", english: "to study" },
+                    { thai: "สอบ", english: "to take a test" },
+                    { thai: "ผ่าน", english: "to pass (a test)" },
+                    { thai: "ตก", english: "to fail" },
+                    { thai: "ทบทวน", english: "to review" },
+                    { thai: "ทำงานบ้าน", english: "homework" },
+                    { thai: "การบ้าน", english: "homework" },
+                    { thai: "ปริญญา", english: "degree" },
+                    { thai: "วิทยาลัย", english: "college" },
+                    { thai: "มหาวิทยาลัย", english: "university" },
+                    { thai: "โรงเรียน", english: "school" },
+                    { thai: "ครู", english: "teacher" },
+                    { thai: "นักเรียน", english: "student" },
+                    { thai: "ห้องเรียน", english: "classroom" },
+                    { thai: "สนามกีฬา", english: "sports field" },
+                    { thai: "ห้องสมุด", english: "library" },
+                    { thai: "แพทย์", english: "doctor" },
+                    { thai: "พยาบาล", english: "nurse" },
+                    { thai: "โรงพยาบาล", english: "hospital" },
+                    { thai: "ยา", english: "medicine" },
+                    { thai: "ป่วย", english: "sick/ill" },
+                    { thai: "หาย", english: "to recover/heal" },
+                    { thai: "ตรวจ", english: "to examine/check" },
+                    { thai: "รักษา", english: "to treat/cure" },
+                    { thai: "ออกกำลังกาย", english: "to exercise" },
+                    { thai: "พักผ่อน", english: "to rest/relax" }
+                ]
+            },
+            {
+                name: "List 2: Travel, Weather & Shopping",
+                words: [
+                    { thai: "สวัสดี", english: "hello/goodbye" },
+                    { thai: "ขอบคุณ", english: "thank you" },
+                    { thai: "ขอโทษ", english: "excuse me/sorry" },
+                    { thai: "ไม่เป็นไร", english: "never mind/no problem" },
+                    { thai: "ช่วยได้ไหม", english: "can you help?" },
+                    { thai: "ไม่เข้าใจ", english: "don't understand" },
+                    { thai: "พูดช้าๆ", english: "speak slowly" },
+                    { thai: "ห้องน้ำอยู่ไหน", english: "where is the bathroom?" },
+                    { thai: "เท่าไหร่", english: "how much?" },
+                    { thai: "แพงเกินไป", english: "too expensive" },
+                    { thai: "ลดหน่อย", english: "discount please" },
+                    { thai: "ตลาด", english: "market" },
+                    { thai: "ร้านค้า", english: "shop/store" },
+                    { thai: "ห้างสรรพสินค้า", english: "department store/mall" },
+                    { thai: "ราคา", english: "price" },
+                    { thai: "เงิน", english: "money" },
+                    { thai: "บาท", english: "baht (currency)" },
+                    { thai: "แลกเงิน", english: "exchange money" },
+                    { thai: "บัตรเครดิต", english: "credit card" },
+                    { thai: "เงินสด", english: "cash" },
+                    { thai: "ใบเสร็จ", english: "receipt" },
+                    { thai: "ของขวัญ", english: "gift/souvenir" },
+                    { thai: "ของที่ระลึก", english: "souvenir" },
+                    { thai: "อากาศ", english: "weather/air" },
+                    { thai: "ฝน", english: "rain" },
+                    { thai: "ฝนตก", english: "it's raining" },
+                    { thai: "แดด", english: "sunlight" },
+                    { thai: "ลม", english: "wind" },
+                    { thai: "เมฆ", english: "cloud" },
+                    { thai: "ฟ้า", english: "sky" },
+                    { thai: "พายุ", english: "storm" },
+                    { thai: "ฟ้าผ่า", english: "lightning" },
+                    { thai: "ฟ้าร้อง", english: "thunder" },
+                    { thai: "น้ำท่วม", english: "flood" },
+                    { thai: "ชื้น", english: "humid" },
+                    { thai: "แห้ง", english: "dry" },
+                    { thai: "หมอก", english: "fog" },
+                    { thai: "อากาศดี", english: "good weather" },
+                    { thai: "อากาศแย่", english: "bad weather" },
+                    { thai: "ร้อนจัด", english: "very hot" },
+                    { thai: "หนาวจัด", english: "very cold" },
+                    { thai: "อบอ้าว", english: "hot and humid" },
+                    { thai: "ฤดู", english: "season" },
+                    { thai: "ฤดูฝน", english: "rainy season" },
+                    { thai: "ฤดูร้อน", english: "hot season" },
+                    { thai: "ฤดูหนาว", english: "cool season" },
+                    { thai: "อุณหภูมิ", english: "temperature" },
+                    { thai: "องศา", english: "degree (temperature)" },
+                    { thai: "โรงแรม", english: "hotel" },
+                    { thai: "ห้องพัก", english: "room (hotel)" },
+                    { thai: "จอง", english: "to book/reserve" },
+                    { thai: "เช็คอิน", english: "check in" },
+                    { thai: "เช็คเอาท์", english: "check out" },
+                    { thai: "กุญแจ", english: "key" },
+                    { thai: "แอร์", english: "air conditioner" },
+                    { thai: "พัดลม", english: "fan" },
+                    { thai: "ร้านอาหาร", english: "restaurant" },
+                    { thai: "เมนู", english: "menu" },
+                    { thai: "สั่งอาหาร", english: "to order food" },
+                    { thai: "เช็คบิล", english: "check/bill please" },
+                    { thai: "ทิป", english: "tip (gratuity)" },
+                    { thai: "หิว", english: "hungry" },
+                    { thai: "อิ่ม", english: "full (not hungry)" },
+                    { thai: "กระหาย", english: "thirsty" },
+                    { thai: "น้ำเปล่า", english: "plain water" },
+                    { thai: "น้ำแข็ง", english: "ice" },
+                    { thai: "ไม่เอาน้ำตาล", english: "no sugar" },
+                    { thai: "ไม่เอาน้ำแข็ง", english: "no ice" },
+                    { thai: "รถแท็กซี่", english: "taxi" },
+                    { thai: "รถตู้", english: "van" },
+                    { thai: "รถบัส", english: "bus" },
+                    { thai: "รถไฟ", english: "train" },
+                    { thai: "รถไฟฟ้า", english: "skytrain/metro" },
+                    { thai: "เรือ", english: "boat" },
+                    { thai: "เครื่องบิน", english: "airplane" },
+                    { thai: "สนามบิน", english: "airport" },
+                    { thai: "สถานี", english: "station" },
+                    { thai: "ป้ายรถเมล์", english: "bus stop" },
+                    { thai: "ตั๋ว", english: "ticket" },
+                    { thai: "ซื้อตั๋ว", english: "buy ticket" },
+                    { thai: "ขึ้นรถ", english: "get on (vehicle)" },
+                    { thai: "ลงรถ", english: "get off (vehicle)" },
+                    { thai: "ไปไหน", english: "where are you going?" },
+                    { thai: "ถึง", english: "to arrive" },
+                    { thai: "เลี้ยวซ้าย", english: "turn left" },
+                    { thai: "เลี้ยวขวา", english: "turn right" },
+                    { thai: "ตรงไป", english: "go straight" },
+                    { thai: "ช้าหน่อย", english: "slow down" },
+                    { thai: "เร็วหน่อย", english: "faster please" },
+                    { thai: "ที่นี่", english: "here" },
+                    { thai: "ที่นั่น", english: "there" },
+                    { thai: "ใกล้", english: "near/close" },
+                    { thai: "ไกล", english: "far" },
+                    { thai: "หลง", english: "lost/get lost" },
+                    { thai: "แผนที่", english: "map" },
+                    { thai: "ที่อยู่", english: "address" },
+                    { thai: "ถนน", english: "road/street" },
+                    { thai: "ซอย", english: "side street/alley" },
+                    { thai: "สะพาน", english: "bridge" },
+                    { thai: "แม่น้ำ", english: "river" },
+                    { thai: "ทะเล", english: "sea/ocean" },
+                    { thai: "ภูเขา", english: "mountain" },
+                    { thai: "ป่า", english: "forest/jungle" },
+                    { thai: "เกาะ", english: "island" },
+                    { thai: "หาด", english: "beach" },
+                    { thai: "น้ำตก", english: "waterfall" },
+                    { thai: "วัด", english: "temple" },
+                    { thai: "พระ", english: "monk" },
+                    { thai: "พระพุทธรูป", english: "Buddha statue" },
+                    { thai: "พิพิธภัณฑ์", english: "museum" },
+                    { thai: "สวนสาธารณะ", english: "park" },
+                    { thai: "สวนสัตว์", english: "zoo" }
+                ]
+            }
+        ];
+
+        const LEARNING_THRESHOLD = 3;
+        const REVIEW_DECAY_DAYS = 7;
+
+        let currentListIndex = 0;
+        let vocabulary = vocabularyLists[currentListIndex].words;
+        let cards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let showThaiFront = true;
+        let currentMode = 'all';
+        let cardStats = {};
+        let sessionStats = { correct: 0, incorrect: 0, cardsReviewed: 0 };
+        let sessionState = { cardOrder: [], currentIndex: 0, listIndex: 0, mode: 'all', inProgress: false };
+        let favorites = new Set(); // Track favorited card keys
+
+        // Special list indices (negative to distinguish from vocabulary lists)
+        const FAVORITES_LIST = -1;
+        const HARDEST_LIST = -2;
+
+        let touchStartX = 0, touchStartY = 0, currentX = 0, isSwiping = false, lastTouchEnd = 0;
+
+        const flashcard = document.getElementById('flashcard');
+        const frontText = document.getElementById('frontText');
+        const backText = document.getElementById('backText');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const flipBtn = document.getElementById('flipBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const cardCounter = document.getElementById('cardCounter');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressFill = document.getElementById('progressFill');
+        const correctScore = document.getElementById('correctScore');
+        const incorrectScore = document.getElementById('incorrectScore');
+        const csvFileInput = document.getElementById('csvFileInput');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const statsBtn = document.getElementById('statsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const statsModal = document.getElementById('statsModal');
+        const resumeModal = document.getElementById('resumeModal');
+        const listSelector = document.getElementById('listSelector');
+        const listProgressDisplay = document.getElementById('listProgressDisplay');
+        const swipeLeft = document.getElementById('swipeLeft');
+        const swipeRight = document.getElementById('swipeRight');
+        const swipeBarLeft = document.getElementById('swipeBarLeft');
+        const swipeBarRight = document.getElementById('swipeBarRight');
+        const toast = document.getElementById('toast');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        function init() {
+            loadProgress();
+            updateListSelector();
+            if (sessionState.inProgress && sessionState.cardOrder.length > 0) {
+                showResumeModal();
+            } else {
+                initializeCards();
+                updateCard();
+            }
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            flashcard.addEventListener('click', () => { if (!isSwiping) flipCard(); });
+            flashcard.addEventListener('touchstart', handleTouchStart, { passive: false });
+            flashcard.addEventListener('touchmove', handleTouchMove, { passive: false });
+            flashcard.addEventListener('touchend', handleTouchEnd);
+
+            flipBtn.addEventListener('click', flipCard);
+            prevBtn.addEventListener('click', prevCard);
+            nextBtn.addEventListener('click', nextCard);
+            shuffleBtn.addEventListener('click', shuffleCards);
+            toggleBtn.addEventListener('click', toggleLanguage);
+
+            document.getElementById('restartBtn').addEventListener('click', startFresh);
+            document.getElementById('resumeBtn').addEventListener('click', resumeSession);
+
+            settingsBtn.addEventListener('click', () => settingsModal.classList.add('open'));
+            statsBtn.addEventListener('click', () => { updateStatsModal(); statsModal.classList.add('open'); });
+            document.getElementById('closeSettings').addEventListener('click', () => settingsModal.classList.remove('open'));
+            document.getElementById('closeStats').addEventListener('click', () => statsModal.classList.remove('open'));
+            document.getElementById('closeResume').addEventListener('click', () => resumeModal.classList.remove('open'));
+
+            document.getElementById('startFreshBtn').addEventListener('click', () => { resumeModal.classList.remove('open'); startFresh(); });
+            document.getElementById('resumeSessionBtn').addEventListener('click', () => { resumeModal.classList.remove('open'); resumeSession(); });
+
+            csvFileInput.addEventListener('change', handleFileUpload);
+            listSelector.addEventListener('change', (e) => switchList(parseInt(e.target.value)));
+            document.getElementById('exportBtn').addEventListener('click', exportProgress);
+            document.getElementById('resetBtn').addEventListener('click', resetProgress);
+
+            modeBtns.forEach(btn => btn.addEventListener('click', () => switchMode(btn.dataset.mode)));
+            document.addEventListener('keydown', handleKeyboard);
+            
+            // Favorite button
+            document.getElementById('favoriteBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleFavorite();
+            });
+
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd < 300) e.preventDefault();
+                lastTouchEnd = now;
+            }, false);
+
+            window.addEventListener('click', (e) => {
+                if (e.target === settingsModal) settingsModal.classList.remove('open');
+                if (e.target === statsModal) statsModal.classList.remove('open');
+                if (e.target === resumeModal) resumeModal.classList.remove('open');
+            });
+        }
+
+        function handleTouchStart(e) {
+            if (e.touches.length > 1) return;
+            touchStartX = currentX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isSwiping = false;
+        }
+
+        function handleTouchMove(e) {
+            if (!touchStartX) return;
+            currentX = e.touches[0].clientX;
+            const diffX = currentX - touchStartX;
+            const diffY = e.touches[0].clientY - touchStartY;
+
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+                e.preventDefault();
+                isSwiping = true;
+                flashcard.classList.add('swiping');
+                flashcard.style.transform = `translateX(${diffX}px) rotateY(${isFlipped ? 180 : 0}deg)`;
+
+                const intensity = Math.min(Math.abs(diffX) / 100, 1);
+
+                if (diffX > 30) {
+                    swipeRight.classList.add('visible');
+                    swipeBarRight.classList.add('visible');
+                    swipeBarRight.style.opacity = intensity;
+                    swipeLeft.classList.remove('visible');
+                    swipeBarLeft.classList.remove('visible');
+                } else if (diffX < -30) {
+                    swipeLeft.classList.add('visible');
+                    swipeBarLeft.classList.add('visible');
+                    swipeBarLeft.style.opacity = intensity;
+                    swipeRight.classList.remove('visible');
+                    swipeBarRight.classList.remove('visible');
+                } else {
+                    swipeLeft.classList.remove('visible');
+                    swipeRight.classList.remove('visible');
+                    swipeBarLeft.classList.remove('visible');
+                    swipeBarRight.classList.remove('visible');
+                }
+            }
+        }
+
+        function handleTouchEnd() {
+            if (!touchStartX) return;
+            const diffX = currentX - touchStartX;
+
+            swipeLeft.classList.remove('visible');
+            swipeRight.classList.remove('visible');
+            swipeBarLeft.classList.remove('visible');
+            swipeBarRight.classList.remove('visible');
+            swipeBarLeft.style.opacity = '';
+            swipeBarRight.style.opacity = '';
+            flashcard.classList.remove('swiping');
+            flashcard.style.transform = '';
+
+            if (Math.abs(diffX) > 100) {
+                diffX > 0 ? markCorrect() : markIncorrect();
+            }
+
+            touchStartX = currentX = 0;
+            setTimeout(() => { isSwiping = false; }, 100);
+        }
+
+        function handleKeyboard(e) {
+            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); markCorrect(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); markIncorrect(); }
+        }
+
+        function initializeCards() {
+            if (currentMode === 'review') {
+                const listStats = getListStats(currentListIndex);
+                cards = vocabulary.filter(c => {
+                    const stat = listStats[getCardKey(c)];
+                    return stat && stat.incorrect > 0;
+                });
+                if (cards.length === 0) {
+                    showToast('No incorrect cards to review!');
+                    switchMode('all');
+                    return;
+                }
+                cards.sort((a, b) => (getListStats(currentListIndex)[getCardKey(b)]?.incorrect || 0) - (getListStats(currentListIndex)[getCardKey(a)]?.incorrect || 0));
+            } else {
+                cards = [...vocabulary].sort(() => Math.random() - 0.5);
+            }
+            currentIndex = 0;
+            saveSessionState();
+        }
+
+        function getCardKey(card) { return `${card.thai}|${card.english}`; }
+        function getListStats(idx) { if (!cardStats[idx]) cardStats[idx] = {}; return cardStats[idx]; }
+
+        function getListProgress(idx) {
+            const list = vocabularyLists[idx], stats = getListStats(idx);
+            let learned = 0, reviewed = 0, totalCorrect = 0, totalIncorrect = 0;
+            list.words.forEach(c => {
+                const s = stats[getCardKey(c)];
+                if (s) {
+                    reviewed++;
+                    totalCorrect += s.correct || 0;
+                    totalIncorrect += s.incorrect || 0;
+                    if (s.consecutiveCorrect >= LEARNING_THRESHOLD) learned++;
+                }
+            });
+            return { total: list.words.length, learned, reviewed, learnedPercent: Math.round((learned / list.words.length) * 100), totalCorrect, totalIncorrect };
+        }
+
+        function updateCard() {
+            if (!cards.length) { frontText.textContent = backText.textContent = 'No cards'; return; }
+            const card = cards[currentIndex];
+            frontText.textContent = showThaiFront ? card.thai : card.english;
+            backText.textContent = showThaiFront ? card.english : card.thai;
+            applyFontSize(frontText);
+            applyFontSize(backText);
+
+            const progress = ((currentIndex + 1) / cards.length) * 100;
+            cardCounter.textContent = `Card ${currentIndex + 1} of ${cards.length}`;
+            progressPercent.textContent = `${Math.round(progress)}%`;
+            progressFill.style.width = `${progress}%`;
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === cards.length - 1;
+            
+            // Update favorite button
+            const isFav = favorites.has(getCardKey(card));
+            const favBtn = document.getElementById('favoriteBtn');
+            favBtn.textContent = isFav ? '★' : '☆';
+            favBtn.classList.toggle('active', isFav);
+            
+            updateScoreDisplay();
+        }
+
+        function applyFontSize(el) {
+            const len = el.textContent.length;
+            el.className = 'card-text' + (len > 40 ? ' xtiny' : len > 25 ? ' tiny' : len > 18 ? ' small' : len > 10 ? ' medium' : '');
+        }
+
+        function flipCard() { isFlipped = !isFlipped; flashcard.classList.toggle('flipped'); }
+        function nextCard() { if (currentIndex < cards.length - 1) { currentIndex++; if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; } updateCard(); saveSessionState(); } }
+        function prevCard() { if (currentIndex > 0) { currentIndex--; if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; } updateCard(); saveSessionState(); } }
+        function shuffleCards() { initializeCards(); if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; } updateCard(); showToast('Cards shuffled!'); }
+        function toggleLanguage() { showThaiFront = !showThaiFront; toggleBtn.textContent = `🔄 ${showThaiFront ? 'Thai' : 'English'} Front`; if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; } updateCard(); saveProgress(); }
+        
+        function toggleFavorite() {
+            if (!cards.length) return;
+            const card = cards[currentIndex];
+            const key = getCardKey(card);
+            
+            if (favorites.has(key)) {
+                favorites.delete(key);
+                showToast('Removed from favorites');
+            } else {
+                favorites.add(key);
+                showToast('Added to favorites ⭐');
+            }
+            
+            updateCard();
+            updateListSelector();
+            saveProgress();
+        }
+
+        function markCorrect() {
+            if (!cards.length) return;
+            const key = getCardKey(cards[currentIndex]), stats = getListStats(currentListIndex);
+            if (!stats[key]) stats[key] = { correct: 0, incorrect: 0, consecutiveCorrect: 0, lastReviewed: null };
+            stats[key].correct++;
+            stats[key].consecutiveCorrect++;
+            stats[key].lastReviewed = new Date().toISOString();
+            sessionStats.correct++;
+            if (stats[key].consecutiveCorrect === LEARNING_THRESHOLD) showToast('🎉 Word learned!');
+            updateScoreDisplay();
+            saveProgress();
+            currentIndex < cards.length - 1 ? nextCard() : (showToast('Session complete! 🎉'), sessionState.inProgress = false, saveSessionState());
+        }
+
+        function markIncorrect() {
+            if (!cards.length) return;
+            const key = getCardKey(cards[currentIndex]), stats = getListStats(currentListIndex);
+            if (!stats[key]) stats[key] = { correct: 0, incorrect: 0, consecutiveCorrect: 0, lastReviewed: null };
+            stats[key].incorrect++;
+            stats[key].consecutiveCorrect = 0;
+            stats[key].lastReviewed = new Date().toISOString();
+            sessionStats.incorrect++;
+            updateScoreDisplay();
+            saveProgress();
+            currentIndex < cards.length - 1 ? nextCard() : (showToast('Session complete! 🎉'), sessionState.inProgress = false, saveSessionState());
+        }
+
+        function updateScoreDisplay() {
+            const stats = getListStats(currentListIndex);
+            let tc = 0, ti = 0;
+            Object.values(stats).forEach(s => { tc += s.correct || 0; ti += s.incorrect || 0; });
+            correctScore.textContent = tc;
+            incorrectScore.textContent = ti;
+            const p = getListProgress(currentListIndex);
+            listProgressDisplay.textContent = `${p.learned} of ${p.total} learned (${p.learnedPercent}%)`;
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+            initializeCards();
+            if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; }
+            updateCard();
+            saveProgress();
+        }
+
+        function switchList(idx) {
+            currentListIndex = idx;
+            
+            if (idx === FAVORITES_LIST) {
+                vocabulary = getFavoriteCards();
+                if (vocabulary.length === 0) {
+                    showToast('No favorites yet! Tap ☆ to add cards.');
+                    listSelector.value = 0;
+                    switchList(0);
+                    return;
+                }
+            } else if (idx === HARDEST_LIST) {
+                const hardest = getHardestCards();
+                vocabulary = hardest.map(h => h.card);
+                if (vocabulary.length === 0) {
+                    showToast('No incorrect cards yet! Keep practicing.');
+                    listSelector.value = 0;
+                    switchList(0);
+                    return;
+                }
+            } else {
+                vocabulary = vocabularyLists[idx].words;
+            }
+            
+            initializeCards();
+            if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; }
+            updateCard();
+            saveProgress();
+        }
+
+        function updateListSelector() {
+            listSelector.innerHTML = '';
+            
+            // Add Favorites option
+            const favOption = document.createElement('option');
+            favOption.value = FAVORITES_LIST;
+            favOption.textContent = `⭐ Favorites (${favorites.size} words)`;
+            listSelector.appendChild(favOption);
+            
+            // Add Hardest Cards option
+            const hardOption = document.createElement('option');
+            hardOption.value = HARDEST_LIST;
+            const hardestCount = getHardestCards().length;
+            hardOption.textContent = `🔥 Hardest Cards (${hardestCount} words)`;
+            listSelector.appendChild(hardOption);
+            
+            // Add separator
+            const separator = document.createElement('option');
+            separator.disabled = true;
+            separator.textContent = '───────────────';
+            listSelector.appendChild(separator);
+            
+            // Add vocabulary lists
+            vocabularyLists.forEach((l, i) => {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${l.name} (${l.words.length} words)`;
+                listSelector.appendChild(option);
+            });
+            
+            listSelector.value = currentListIndex;
+        }
+        
+        function getHardestCards() {
+            // Get all cards with incorrect counts across all lists
+            const allCardsWithStats = [];
+            
+            vocabularyLists.forEach((list, listIdx) => {
+                list.words.forEach(card => {
+                    const key = getCardKey(card);
+                    const stats = cardStats[listIdx]?.[key];
+                    if (stats && stats.incorrect > 0) {
+                        allCardsWithStats.push({
+                            card,
+                            incorrect: stats.incorrect,
+                            listIdx
+                        });
+                    }
+                });
+            });
+            
+            // Sort by incorrect count (highest first) and take top 30
+            allCardsWithStats.sort((a, b) => b.incorrect - a.incorrect);
+            return allCardsWithStats.slice(0, 30);
+        }
+        
+        function getFavoriteCards() {
+            const favCards = [];
+            vocabularyLists.forEach(list => {
+                list.words.forEach(card => {
+                    if (favorites.has(getCardKey(card))) {
+                        favCards.push(card);
+                    }
+                });
+            });
+            return favCards;
+        }
+
+        function saveSessionState() {
+            sessionState = { cardOrder: cards.map(getCardKey), currentIndex, listIndex: currentListIndex, mode: currentMode, inProgress: currentIndex < cards.length - 1 && cards.length > 0 };
+            localStorage.setItem('thaiFlashcardsSession', JSON.stringify(sessionState));
+        }
+
+        function showResumeModal() {
+            document.getElementById('resumeListName').textContent = vocabularyLists[sessionState.listIndex]?.name || 'Unknown';
+            document.getElementById('resumeProgress').textContent = `Card ${sessionState.currentIndex + 1} of ${sessionState.cardOrder.length}`;
+            document.getElementById('resumeCorrect').textContent = sessionStats.correct;
+            document.getElementById('resumeIncorrect').textContent = sessionStats.incorrect;
+            resumeModal.classList.add('open');
+        }
+
+        function startFresh() {
+            sessionStats = { correct: 0, incorrect: 0, cardsReviewed: 0 };
+            initializeCards();
+            if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; }
+            updateCard();
+            showToast('Started fresh session!');
+        }
+
+        function resumeSession() {
+            if (sessionState.cardOrder.length) {
+                currentListIndex = sessionState.listIndex;
+                vocabulary = vocabularyLists[currentListIndex].words;
+                listSelector.value = currentListIndex;
+                currentMode = sessionState.mode;
+                modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
+                const map = new Map(vocabulary.map(c => [getCardKey(c), c]));
+                cards = sessionState.cardOrder.map(k => map.get(k)).filter(Boolean);
+                currentIndex = Math.min(sessionState.currentIndex, cards.length - 1);
+                if (isFlipped) { flashcard.classList.remove('flipped'); isFlipped = false; }
+                updateCard();
+                showToast('Session resumed!');
+            } else startFresh();
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const lines = ev.target.result.split('\n').filter(l => l.trim());
+                const newCards = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const m = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+                    if (m?.length >= 2) {
+                        const thai = m[0].replace(/^"|"$/g, '').trim();
+                        const english = m[1].replace(/^"|"$/g, '').trim();
+                        if (thai && english) newCards.push({ thai, english });
+                    }
+                }
+                if (!newCards.length) { showToast('No valid cards found'); return; }
+                const existing = new Set(vocabulary.map(c => c.thai.toLowerCase() + '|' + c.english.toLowerCase()));
+                const unique = newCards.filter(c => !existing.has(c.thai.toLowerCase() + '|' + c.english.toLowerCase()));
+                if (!unique.length) { showToast('All cards are duplicates'); csvFileInput.value = ''; return; }
+                vocabulary.push(...unique);
+                initializeCards();
+                updateCard();
+                saveProgress();
+                showToast(`Imported ${unique.length} new cards!`);
+                csvFileInput.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function updateStatsModal() {
+            document.getElementById('sessionCorrect').textContent = sessionStats.correct;
+            document.getElementById('sessionIncorrect').textContent = sessionStats.incorrect;
+            const cp = getListProgress(currentListIndex);
+            document.getElementById('currentListStats').innerHTML = `
+                <div class="list-stat-item">
+                    <div class="list-stat-header"><span class="list-stat-name">${vocabularyLists[currentListIndex].name}</span><span class="list-stat-percent">${cp.learnedPercent}%</span></div>
+                    <div class="list-stat-bar"><div class="list-stat-bar-fill" style="width:${cp.learnedPercent}%"></div></div>
+                    <div class="list-stat-details">
+                        <div class="stat-detail-item"><span class="stat-detail-value">${cp.learned}/${cp.total}</span><span>Learned</span></div>
+                        <div class="stat-detail-item"><span class="stat-detail-value">${cp.reviewed}</span><span>Reviewed</span></div>
+                        <div class="stat-detail-item"><span class="stat-detail-value score-correct">${cp.totalCorrect}</span><span>Correct</span></div>
+                        <div class="stat-detail-item"><span class="stat-detail-value score-incorrect">${cp.totalIncorrect}</span><span>Wrong</span></div>
+                    </div>
+                </div>`;
+            document.getElementById('allListsStats').innerHTML = vocabularyLists.map((l, i) => {
+                const p = getListProgress(i);
+                return `<div class="list-stat-item">
+                    <div class="list-stat-header"><span class="list-stat-name">${l.name}</span><span class="list-stat-percent">${p.learnedPercent}%</span></div>
+                    <div class="list-stat-bar"><div class="list-stat-bar-fill" style="width:${p.learnedPercent}%"></div></div>
+                    <div class="list-stat-details">
+                        <div class="stat-detail-item"><span class="stat-detail-value">${p.learned}/${p.total}</span><span>Learned</span></div>
+                        <div class="stat-detail-item"><span class="stat-detail-value">${p.reviewed}</span><span>Reviewed</span></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function exportProgress() {
+            const data = { version: 1, exportDate: new Date().toISOString(), cardStats, sessionStats, currentListIndex, showThaiFront, currentMode, favorites: Array.from(favorites) };
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+            a.download = `thai-flashcards-progress-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('Progress exported!');
+        }
+
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all progress?')) {
+                cardStats = {};
+                sessionStats = { correct: 0, incorrect: 0, cardsReviewed: 0 };
+                sessionState = { cardOrder: [], currentIndex: 0, listIndex: 0, mode: 'all', inProgress: false };
+                favorites = new Set();
+                localStorage.removeItem('thaiFlashcardsSession');
+                saveProgress();
+                currentListIndex = 0;
+                vocabulary = vocabularyLists[0].words;
+                updateListSelector();
+                initializeCards();
+                updateCard();
+                showToast('Progress reset!');
+                settingsModal.classList.remove('open');
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('thaiFlashcardsProgress', JSON.stringify({ 
+                cardStats, 
+                sessionStats, 
+                currentListIndex, 
+                showThaiFront, 
+                currentMode, 
+                favorites: Array.from(favorites),
+                lastSaved: new Date().toISOString() 
+            }));
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem('thaiFlashcardsProgress');
+                if (saved) {
+                    const d = JSON.parse(saved);
+                    cardStats = d.cardStats || {};
+                    sessionStats = d.sessionStats || { correct: 0, incorrect: 0, cardsReviewed: 0 };
+                    currentListIndex = d.currentListIndex || 0;
+                    showThaiFront = d.showThaiFront !== undefined ? d.showThaiFront : true;
+                    currentMode = d.currentMode || 'all';
+                    favorites = new Set(d.favorites || []);
+                    toggleBtn.textContent = `🔄 ${showThaiFront ? 'Thai' : 'English'} Front`;
+                    modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
+                }
+                const sess = localStorage.getItem('thaiFlashcardsSession');
+                if (sess) sessionState = JSON.parse(sess);
+            } catch (e) { console.error(e); }
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
