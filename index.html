@@ -336,6 +336,8 @@
         perspective: 1000px;
         margin-bottom: 15px;
         position: relative;
+        overflow: hidden;
+        border-radius: 24px;
     }
 
     .swipe-bar {
@@ -2700,7 +2702,7 @@
             const end = Math.min(start + chunkSize, allWords.length);
             const words = allWords.slice(start, end).map(({ thai, english }) => ({ thai, english }));
             mixedLists.push({
-                name: `Mixed List ${String.fromCharCode(65 + i)} (${words.length} words)`,
+                name: "Mixed List " + String.fromCharCode(65 + i) + " (" + words.length + " words)",
                 words
             });
         }
@@ -2924,7 +2926,7 @@
     }
     
     function getMasteryStatus(card) {
-        const key = `${card.thai}-${card.english}`;
+        const key = card.thai + "-" + card.english;
         const stats = cardStats[key];
         
         if (!stats || stats.correctStreak === 0) {
@@ -2952,8 +2954,8 @@
         
         // Sort cards: due cards first, then by difficulty
         return [...cardList].sort((a, b) => {
-            const keyA = `${a.thai}-${a.english}`;
-            const keyB = `${b.thai}-${b.english}`;
+            const keyA = a.thai + "-" + a.english;
+            const keyB = b.thai + "-" + b.english;
             const statsA = cardStats[keyA] || { correctStreak: 0, incorrect: 0 };
             const statsB = cardStats[keyB] || { correctStreak: 0, incorrect: 0 };
             
@@ -3071,7 +3073,7 @@
             e.preventDefault();
             isSwiping = true;
             flashcard.classList.add('swiping');
-            flashcard.style.transform = `translateX(${diffX}px) rotateY(${isFlipped ? 180 : 0}deg)`;
+            flashcard.style.transform = "translateX(" + diffX + "px) rotateY(" + (isFlipped ? 180 : 0) + "deg)";
 
             const intensity = Math.min(Math.abs(diffX) / 100, 1);
 
@@ -3222,7 +3224,7 @@
         saveSessionState();
     }
 
-    function getCardKey(card) { return `${card.thai}|${card.english}`; }
+    function getCardKey(card) { return card.thai + "|" + card.english; }
     function getListStats(idx) { if (!cardStats[idx]) cardStats[idx] = {}; return cardStats[idx]; }
 
     function getListProgress(idx) {
@@ -3263,11 +3265,11 @@
                 text = 'This list is empty.';
             }
             
-            frontText.innerHTML = `<div class="empty-state">
-                <div class="empty-state-icon">${icon}</div>
-                <div class="empty-state-title">${title}</div>
-                <div class="empty-state-text">${text}</div>
-            </div>`;
+            frontText.innerHTML = '<div class="empty-state">' +
+                '<div class="empty-state-icon">' + icon + '</div>' +
+                '<div class="empty-state-title">' + title + '</div>' +
+                '<div class="empty-state-text">' + text + '</div>' +
+            '</div>';
             backText.innerHTML = frontText.innerHTML;
             frontRomanization.textContent = '';
             backRomanization.textContent = '';
@@ -3306,9 +3308,9 @@
         masteryIndicator.style.display = 'block';
 
         const progress = ((currentIndex + 1) / cards.length) * 100;
-        cardCounter.textContent = `Card ${currentIndex + 1} of ${cards.length}`;
-        progressPercent.textContent = `${Math.round(progress)}%`;
-        progressFill.style.width = `${progress}%`;
+        cardCounter.textContent = "Card " + (currentIndex + 1) + " of " + cards.length;
+        progressPercent.textContent = Math.round(progress) + "%";
+        progressFill.style.width = progress + "%";
         updateMilestones(progress);
         prevBtn.disabled = currentIndex === 0;
         nextBtn.disabled = currentIndex === cards.length - 1;
@@ -3374,7 +3376,7 @@
     function toggleLanguage() { 
         showThaiFront = !showThaiFront; 
         localStorage.setItem('thaiFlashcardsThaiFront', showThaiFront);
-        toggleBtn.textContent = `🔄 ${showThaiFront ? 'Thai' : 'English'} Front`; 
+        toggleBtn.textContent = "🔄 " + (showThaiFront ? "Thai" : "English") + " Front"; 
         // Sync options panel buttons
         document.querySelectorAll('.option-toggle-btn[data-direction]').forEach(btn => {
             btn.classList.toggle('active', 
@@ -3518,7 +3520,7 @@
         document.getElementById('completionTotal').textContent = total;
         document.getElementById('completionCorrect').textContent = sessionStats.correct;
         document.getElementById('completionIncorrect').textContent = sessionStats.incorrect;
-        document.getElementById('completionAccuracy').textContent = `${accuracy}%`;
+        document.getElementById('completionAccuracy').textContent = accuracy + "%";
         
         document.getElementById('completionModal').classList.add('open');
     }
@@ -3531,11 +3533,11 @@
         // Update list progress display
         if (currentListIndex >= 0) {
             const p = getListProgress(currentListIndex);
-            listProgressDisplay.textContent = `${p.learned} of ${p.total} learned (${p.learnedPercent}%)`;
+            listProgressDisplay.textContent = p.learned + " of " + p.total + " learned (" + p.learnedPercent + "%)";
         } else if (currentListIndex === FAVORITES_LIST) {
-            listProgressDisplay.textContent = `${favorites.size} favorites`;
+            listProgressDisplay.textContent = favorites.size + " favorites";
         } else if (currentListIndex === HARDEST_LIST) {
-            listProgressDisplay.textContent = `${cards.length} hardest cards`;
+            listProgressDisplay.textContent = cards.length + " hardest cards";
         }
     }
 
@@ -3603,14 +3605,14 @@
         // Add Favorites option
         const favOption = document.createElement('option');
         favOption.value = FAVORITES_LIST;
-        favOption.textContent = `⭐ Favorites (${favorites.size} words)`;
+        favOption.textContent = "⭐ Favorites (" + favorites.size + " words)";
         listSelector.appendChild(favOption);
         
         // Add Hardest Cards option
         const hardOption = document.createElement('option');
         hardOption.value = HARDEST_LIST;
         const hardestCount = getHardestCards().length;
-        hardOption.textContent = `🔥 Hardest Cards (${hardestCount} words)`;
+        hardOption.textContent = "🔥 Hardest Cards (" + hardestCount + " words)";
         listSelector.appendChild(hardOption);
         
         // Add separator
@@ -3623,7 +3625,7 @@
         vocabularyLists.forEach((l, i) => {
             const option = document.createElement('option');
             option.value = i;
-            option.textContent = `${l.name} (${l.words.length} words)`;
+            option.textContent = l.name + " (" + l.words.length + " words)";
             listSelector.appendChild(option);
         });
         
@@ -3672,7 +3674,7 @@
 
     function showResumeModal() {
         document.getElementById('resumeListName').textContent = vocabularyLists[sessionState.listIndex]?.name || 'Unknown';
-        document.getElementById('resumeProgress').textContent = `Card ${sessionState.currentIndex + 1} of ${sessionState.cardOrder.length}`;
+        document.getElementById('resumeProgress').textContent = "Card " + (sessionState.currentIndex + 1) + " of " + sessionState.cardOrder.length;
         document.getElementById('resumeCorrect').textContent = sessionStats.correct;
         document.getElementById('resumeIncorrect').textContent = sessionStats.incorrect;
         resumeModal.classList.add('open');
@@ -3731,7 +3733,7 @@
             initializeCards();
             updateCard();
             saveProgress();
-            showToast(`Imported ${unique.length} new cards!`);
+            showToast("Imported " + unique.length + " new cards!");
             csvFileInput.value = '';
         };
         reader.readAsText(file);
@@ -3740,36 +3742,36 @@
     function updateStatsModal() {
         document.getElementById('sessionCorrect').textContent = sessionStats.correct;
         document.getElementById('sessionIncorrect').textContent = sessionStats.incorrect;
-        const cp = getListProgress(currentListIndex);
-        document.getElementById('currentListStats').innerHTML = `
-            <div class="list-stat-item">
-                <div class="list-stat-header"><span class="list-stat-name">${vocabularyLists[currentListIndex].name}</span><span class="list-stat-percent">${cp.learnedPercent}%</span></div>
-                <div class="list-stat-bar"><div class="list-stat-bar-fill" style="width:${cp.learnedPercent}%"></div></div>
-                <div class="list-stat-details">
-                    <div class="stat-detail-item"><span class="stat-detail-value">${cp.learned}/${cp.total}</span><span>Learned</span></div>
-                    <div class="stat-detail-item"><span class="stat-detail-value">${cp.reviewed}</span><span>Reviewed</span></div>
-                    <div class="stat-detail-item"><span class="stat-detail-value score-correct">${cp.totalCorrect}</span><span>Correct</span></div>
-                    <div class="stat-detail-item"><span class="stat-detail-value score-incorrect">${cp.totalIncorrect}</span><span>Wrong</span></div>
-                </div>
-            </div>`;
-        document.getElementById('allListsStats').innerHTML = vocabularyLists.map((l, i) => {
-            const p = getListProgress(i);
-            return `<div class="list-stat-item">
-                <div class="list-stat-header"><span class="list-stat-name">${l.name}</span><span class="list-stat-percent">${p.learnedPercent}%</span></div>
-                <div class="list-stat-bar"><div class="list-stat-bar-fill" style="width:${p.learnedPercent}%"></div></div>
-                <div class="list-stat-details">
-                    <div class="stat-detail-item"><span class="stat-detail-value">${p.learned}/${p.total}</span><span>Learned</span></div>
-                    <div class="stat-detail-item"><span class="stat-detail-value">${p.reviewed}</span><span>Reviewed</span></div>
-                </div>
-            </div>`;
+        var cp = getListProgress(currentListIndex);
+        document.getElementById('currentListStats').innerHTML = 
+            '<div class="list-stat-item">' +
+                '<div class="list-stat-header"><span class="list-stat-name">' + vocabularyLists[currentListIndex].name + '</span><span class="list-stat-percent">' + cp.learnedPercent + '%</span></div>' +
+                '<div class="list-stat-bar"><div class="list-stat-bar-fill" style="width:' + cp.learnedPercent + '%"></div></div>' +
+                '<div class="list-stat-details">' +
+                    '<div class="stat-detail-item"><span class="stat-detail-value">' + cp.learned + '/' + cp.total + '</span><span>Learned</span></div>' +
+                    '<div class="stat-detail-item"><span class="stat-detail-value">' + cp.reviewed + '</span><span>Reviewed</span></div>' +
+                    '<div class="stat-detail-item"><span class="stat-detail-value score-correct">' + cp.totalCorrect + '</span><span>Correct</span></div>' +
+                    '<div class="stat-detail-item"><span class="stat-detail-value score-incorrect">' + cp.totalIncorrect + '</span><span>Wrong</span></div>' +
+                '</div>' +
+            '</div>';
+        document.getElementById('allListsStats').innerHTML = vocabularyLists.map(function(l, i) {
+            var p = getListProgress(i);
+            return '<div class="list-stat-item">' +
+                '<div class="list-stat-header"><span class="list-stat-name">' + l.name + '</span><span class="list-stat-percent">' + p.learnedPercent + '%</span></div>' +
+                '<div class="list-stat-bar"><div class="list-stat-bar-fill" style="width:' + p.learnedPercent + '%"></div></div>' +
+                '<div class="list-stat-details">' +
+                    '<div class="stat-detail-item"><span class="stat-detail-value">' + p.learned + '/' + p.total + '</span><span>Learned</span></div>' +
+                    '<div class="stat-detail-item"><span class="stat-detail-value">' + p.reviewed + '</span><span>Reviewed</span></div>' +
+                '</div>' +
+            '</div>';
         }).join('');
     }
 
     function exportProgress() {
-        const data = { version: 1, exportDate: new Date().toISOString(), cardStats, sessionStats, currentListIndex, showThaiFront, currentMode, favorites: Array.from(favorites) };
-        const a = document.createElement('a');
+        var data = { version: 1, exportDate: new Date().toISOString(), cardStats: cardStats, sessionStats: sessionStats, currentListIndex: currentListIndex, showThaiFront: showThaiFront, currentMode: currentMode, favorites: Array.from(favorites) };
+        var a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-        a.download = `thai-flashcards-progress-${new Date().toISOString().split('T')[0]}.json`;
+        a.download = 'thai-flashcards-progress-' + new Date().toISOString().split('T')[0] + '.json';
         a.click();
         showToast('Progress exported!');
     }
@@ -3815,7 +3817,7 @@
                 showThaiFront = d.showThaiFront !== undefined ? d.showThaiFront : true;
                 currentMode = d.currentMode || 'all';
                 favorites = new Set(d.favorites || []);
-                toggleBtn.textContent = `🔄 ${showThaiFront ? 'Thai' : 'English'} Front`;
+                toggleBtn.textContent = "🔄 " + (showThaiFront ? "Thai" : "English") + " Front";
                 modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
             }
             const sess = localStorage.getItem('thaiFlashcardsSession');
